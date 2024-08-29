@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using System.IdentityModel.Tokens.Jwt
 @using System.Text.Json
+@using System.Text.Encodings.Web
+@using System.Text.Unicode
 
 <PageTitle>Home</PageTitle>
 
@@ -17,14 +19,12 @@
     .card-header{
         font-size: 10px;
     }
-
     .card-text{
         font-size: 14px;
     }
     .header-text{
         color: #ff2424;
     }
-
     .payload-text{
         color: #4f00e3;
     }
@@ -115,14 +115,18 @@
 
         try
         {
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadJwtToken(token);
-            
+            var jsonToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var jsonOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+
             var header = jsonToken.Header;
-            headerJWT = JsonSerializer.Serialize(header, new JsonSerializerOptions { WriteIndented = true });
+            headerJWT = JsonSerializer.Serialize(header, jsonOptions);
             
             var payload = jsonToken.Payload;
-            payloadJWT = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+            payloadJWT = JsonSerializer.Serialize(payload, jsonOptions);
         }
         catch(Exception)
         {
