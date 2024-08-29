@@ -1,0 +1,37 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+@code {
+    private string userInput = string.Empty;
+}
+
+<h3>Decodificar Token JWT</h3>
+
+<h6>Algoritmo RS256</h6>
+
+<br>
+
+    <div class="row align-items-start">
+        <div class="col-6">
+            <p>JWT Codificado</p>
+            <InputTextArea id="userInput" @bind-Value="userInput" rows="5" style="width: 100%" />
+        </div>
+        <div class="col-6">
+            <p>JWT Decodificado</p>
+            <div style="word-break: break-word;">
+                @userInput
+            </div>
+            @* 
+                TODO:
+                - header
+                - payload
+                - 
+
+            *@
+        </div>
+    </div>
+
+   
+
+
