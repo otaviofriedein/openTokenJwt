@@ -1,35 +1,14 @@
-﻿@page "/"
+@page "/"
 @using System.IdentityModel.Tokens.Jwt
 @using System.Text.Json
 @using System.Text.Encodings.Web
 @using System.Text.Unicode
+@using System.Text.RegularExpressions
+@using System.Web
+
+<link rel="stylesheet" href="css/home.css" />
 
 <PageTitle>Home</PageTitle>
-
-<style>   
-
-    .jwt-encode{
-        width: 100%;
-        min-height: 400px;
-    }
-    .jwt-decode {
-        word-break: break-word;
-        font-family: 'fakt-web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    .card-header{
-        font-size: 10px;
-    }
-    .card-text{
-        font-size: 14px;
-    }
-    .header-text{
-        color: #ff2424;
-    }
-    .payload-text{
-        color: #4f00e3;
-    }
-    
-</style>
 
 <h3>Decodificar Token JWT</h3>
 
@@ -38,9 +17,7 @@
 
 <div class="row align-items-start">
     <div class="col-6">
-        <p>
-            <b>JWT Codificado</b>
-        </p>
+        <p><b>JWT Codificado</b></p>
 
         <InputTextArea class="jwt-encode" id="userInput" @bind-Value="userInput" @oninput="OnChangeInput" rows="10" />
     </div>
@@ -80,7 +57,7 @@
                     </div>
                     <div class="card-body text-secondary">
                         <pre class="card-text payload-text">
-                            @payloadJWT
+                            @((MarkupString)payloadJWT)
                         </pre>
                     </div>
                 </div>
@@ -89,11 +66,12 @@
     </div>
 </div>
 
+
 @code {
+    private string errorMessage = string.Empty;
     private string headerJWT = string.Empty;
     private string payloadJWT = string.Empty;
     private string userInput = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
-    private string errorMessage = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -122,17 +100,41 @@
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
             };
 
-            var header = jsonToken.Header;
-            headerJWT = JsonSerializer.Serialize(header, jsonOptions);
-            
-            var payload = jsonToken.Payload;
-            payloadJWT = JsonSerializer.Serialize(payload, jsonOptions);
+            headerJWT = JsonSerializer.Serialize(jsonToken.Header, jsonOptions);
+
+            var payloadSerialized = JsonSerializer.Serialize(jsonToken.Payload, jsonOptions);      
+            payloadJWT = AddTitleToValues(payloadSerialized);
         }
         catch(Exception)
         {
             errorMessage = "Não foi possível decodificar o Token JWT!";
         }       
     }
+
+    private string AddTitleToValues(string jsonString)
+    {
+        jsonString = AddTitleDateTime(jsonString, "iat");
+        jsonString = AddTitleDateTime(jsonString, "nbf");
+        jsonString = AddTitleDateTime(jsonString, "exp");
+        jsonString = AddTitleDateTime(jsonString, "auth_time");
+
+        return jsonString;
+    }
+
+    private string AddTitleDateTime(string jsonString, string prop)
+    {
+        string pattern = $"\"{prop}\":\\s*(\\d+)";
+
+        Match match = Regex.Match(jsonString, pattern);
+
+        if (match.Success)
+        {
+            string result = match.Groups[1].Value;
+            var dataHora = TimeZoneInfo.ConvertTimeFromUtc(DateTimeOffset.FromUnixTimeSeconds(long.Parse(result)).DateTime, TimeZoneInfo.Local);
+            var dataHoraFormatada = dataHora.ToString("dd/MM/yyyy HH:mm:ss");
+            jsonString = Regex.Replace(jsonString, pattern, $"\"{prop}\":<span title='{dataHoraFormatada}'>{result}</span>");
+        }
+
+        return jsonString;
+    }
 }
-
-
