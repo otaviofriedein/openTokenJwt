@@ -1,0 +1,25 @@
+.jwt-encode {
+    width: 100%;
+    min-height: 400px;
+}
+
+.jwt-decode {
+    word-break: break-word;
+    font-family: 'fakt-web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.card-header {
+    font-size: 10px;
+}
+
+.card-text {
+    font-size: 14px;
+}
+
+.header-text {
+    color: #ff2424;
+}
+
+.payload-text {
+    color: #4f00e3;
+}
